@@ -98,6 +98,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .episode_prefix(conf.jellyfin.append_prefix)
         .show_paused(conf.discord.show_paused)
         .show_images(conf.images.enable_images)
+        .image_base_url(conf.images.base_url)
         .use_imgur(conf.images.imgur_images)
         .use_litterbox(conf.images.litterbox_images)
         .process_images(conf.images.process_images)

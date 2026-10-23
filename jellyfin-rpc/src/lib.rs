@@ -40,6 +40,7 @@ pub struct Client {
     blacklist: Blacklist,
     show_paused: bool,
     show_images: bool,
+    image_base_url: Option<Url>,
     imgur_options: ImgurOptions,
     litterbox_options: LitterboxOptions,
     process_images: bool,
@@ -382,7 +383,7 @@ impl Client {
         for id in ids {
             let path = "Items/".to_string() + id + "/Images/Primary";
 
-            let image_url = self.url.join(&path)?;
+            let image_url = self.image_base_url.as_ref().unwrap_or(&self.url).join(&path)?;
 
             if !self
                 .reqwest
@@ -1020,6 +1021,7 @@ pub struct ClientBuilder {
     blacklist_libraries: Vec<String>,
     show_paused: bool,
     show_images: bool,
+    image_base_url: Option<String>,
     use_imgur: bool,
     imgur_client_id: String,
     imgur_urls_file_location: String,
@@ -1232,6 +1234,17 @@ impl ClientBuilder {
         self
     }
 
+    /// Base URL used for image links sent to Discord instead of the Jellyfin URL.
+    ///
+    /// Useful when the client reaches Jellyfin through a local address,
+    /// but images should be loaded from a publicly reachable one.
+    ///
+    /// Defaults to `None`.
+    pub fn image_base_url(&mut self, url: Option<String>) -> &mut Self {
+        self.image_base_url = url;
+        self
+    }
+
     /// Use imgur for images, uploads images from jellyfin to imgur and stores the imgur links in a local cache
     ///
     /// Defaults to `false`.
@@ -1381,6 +1394,11 @@ impl ClientBuilder {
             },
             show_paused: self.show_paused,
             show_images: self.show_images,
+            image_base_url: match self.image_base_url {
+                Some(url) if url.ends_with('/') => Some(url.parse()?),
+                Some(url) => Some((url + "/").parse()?),
+                None => None,
+            },
             imgur_options: ImgurOptions {
                 enabled: self.use_imgur,
                 client_id: self.imgur_client_id,

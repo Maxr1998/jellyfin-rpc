@@ -70,6 +70,8 @@ pub struct Discord {
 pub struct Images {
     /// Enables images, not everyone wants them so its a toggle.
     pub enable_images: bool,
+    /// Overrides the base URL used for image links, defaults to the Jellyfin URL.
+    pub base_url: Option<String>,
     /// Enables imgur images.
     pub imgur_images: bool,
     /// Enables litterbox images.
@@ -171,6 +173,8 @@ pub struct Imgur {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ImagesBuilder {
     pub enable_images: Option<bool>,
+    /// Overrides the base URL used for image links, defaults to the Jellyfin URL.
+    pub base_url: Option<String>,
     pub imgur_images: Option<bool>,
     pub litterbox_images: Option<bool>,
     pub process_images: Option<bool>,
@@ -385,6 +389,7 @@ impl ConfigBuilder {
         }
 
         let enable_images;
+        let image_base_url;
         let imgur_images;
         let litterbox_images;
         let process_images;
@@ -395,6 +400,7 @@ impl ConfigBuilder {
 
         if let Some(images) = self.images {
             enable_images = images.enable_images.unwrap_or(false);
+            image_base_url = images.base_url;
             imgur_images = images.imgur_images.unwrap_or(false);
             litterbox_images = images.litterbox_images.unwrap_or(false);
             process_images = images.process_images.unwrap_or(true);
@@ -404,6 +410,7 @@ impl ConfigBuilder {
             image_corner_radius = images.corner_radius.or(Some(4.0));
         } else {
             enable_images = false;
+            image_base_url = None;
             imgur_images = false;
             litterbox_images = false;
             process_images = true;
@@ -458,6 +465,7 @@ impl ConfigBuilder {
             imgur: Imgur { client_id },
             images: Images {
                 enable_images,
+                base_url: image_base_url,
                 imgur_images,
                 litterbox_images,
                 process_images,
